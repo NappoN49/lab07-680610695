@@ -4,13 +4,14 @@ import express, { type Request, type Response } from 'express';
 import morgan from "morgan";
 
 // import database
-import { students } from '@db/db.js';
-import { type Student, type Course } from "@libs/types.js";
+import { students } from './db/db.js';
+import { type Student, type Course } from "./libs/types.js";
 import {
   zStudentDeleteBody,
   zStudentPostBody,
   zStudentPutBody,
-} from "@libs/studentValidator.js";
+} from "./libs/studentValidator.js";
+import { ok } from 'node:assert';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,22 +30,37 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/students", (req: Request, res: Response) => {
   try {
     const program = req.query.program;
+    const stuId = req.query.studentId;
 
-    if (program) {
-      let filtered_students = students.filter(
-        (student) => student.program === program
-      );
+    if(program && stuId){
+      let filtered_students = students.filter((student) => student.studentId === stuId).filter((student) => student.program === program);
       return res.json({
-        success: true,
-        data: filtered_students,
-      });
-    } else {
-      return res.json({
-        success: true,
-        count: students.length,
-        data: students,
+        ok : true,
+        students : filtered_students,
       });
     }
+    else if (program) {
+      let filtered_studentpr = students.filter((student) => student.program === program);
+      return res.json({
+        ok : true,
+        students : filtered_studentpr,
+      });
+    }
+    else if (stuId) {
+      let filtered_studentid = students.filter((student) => student.studentId === stuId);
+      return res.json({
+        ok : true,
+        students : filtered_studentid,
+      });
+    } 
+    else {
+      return res.json({
+        ok : true,
+        count: students.length,
+        students : students,
+      });
+    }
+
   } catch (err) {
     return res.json({
       success: false,
@@ -150,12 +166,66 @@ app.put("/students", (req: Request, res: Response) => {
 
 // DELETE /students, body = {studentId}
 app.delete("/students", (req: Request, res: Response) => {
-  res.json({
-    message: "Implement this!"
-  })
+  try{
+    const body = req.body as Student;
+    const stuId = body.studentId;
+
+    const result = zStudentDeleteBody.safeParse(body);
+    if (!result.success) {
+      return res.status(400).json({
+        ok : false,
+        errors: result.error.issues[0]?.message,
+      });
+    }
+
+    const found = students.find((student) => student.studentId === stuId);
+    if (!found) {
+      return res.status(404).json({
+        ok: false,
+        message: "Student Id does not exist",
+      });
+    }
+
+    const index = students.indexOf(found);
+
+    const newStudents = [...students.slice(0, index),...students.slice(index + 1)
+    ];
+    students.length = 0;
+    students.push(...newStudents);
+
+    return res.status(200).json({
+      ok: true,
+      message: "Student Id " + stuId + " has been deleted",
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      ok: false,
+      message: "Something is wrong, please try again",
+      error: err,
+    });
+  }
 });
 
+
 // GET /api/me
+app.get("/me", (req: Request, res: Response) => {
+  try{
+
+    return res.json({
+      ok : true,
+      fullName : "Parawin Pitaleemaporn",
+      studentId : "680610695"
+    });
+
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: "Something is wrong, please try again",
+      error: err,
+    });
+  }
+});
 
 app.listen(port, async () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
