@@ -27,7 +27,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // GET /students
 // get students (by program)
-app.get("/students", (req: Request, res: Response) => {
+app.get("/api/students", (req: Request, res: Response) => {
   try {
     const program = req.query.program;
     const stuId = req.query.studentId;
@@ -165,7 +165,7 @@ app.put("/students", (req: Request, res: Response) => {
 });
 
 // DELETE /students, body = {studentId}
-app.delete("/students", (req: Request, res: Response) => {
+app.delete("/api/students", (req: Request, res: Response) => {
   try{
     const body = req.body as Student;
     const stuId = body.studentId;
@@ -209,7 +209,7 @@ app.delete("/students", (req: Request, res: Response) => {
 
 
 // GET /api/me
-app.get("/me", (req: Request, res: Response) => {
+app.get("/api/me", (req: Request, res: Response) => {
   try{
 
     return res.json({
