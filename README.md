@@ -6,7 +6,7 @@
 
 ชื่อ-สกุล : ปารวิญ ปิตาลีมาพร
 
-Vercel URL : 
+Vercel URL : https://lab07-680610695.vercel.app
 
 ---
 
